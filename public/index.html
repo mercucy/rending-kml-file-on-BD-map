@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="./public/js/jquery.js"></script>
+    <script type="text/javascript"
+        src="//api.map.baidu.com/api?type=webgl&v=1.0&ak=1C1q1BM9A0lTDzHD1VemQO7CFrYkMS67"></script>
+</head>
+
+<body>
+    <h1>Hello World</h1>
+    <div id="content" style="width: 1000px;height: 800px;">
+    </div>
+
+
+    <script>
+        $(document).ready(function () {
+            $.ajax({
+                type: "post",
+                url: "/get_data",
+                dataType: "json",
+                data: {
+                },
+                success: function (_data) {
+                    console.log(_data.data);
+                    let data = _data.data;
+                    //渲染地图
+                    var map = new BMapGL.Map("content");    // 创建Map实例
+                    map.centerAndZoom(new BMapGL.Point(114.31663396645901, 30.65599911304498), 19);  // 初始化地图,设置中心点坐标和地图级别
+                    map.enableScrollWheelZoom(true);     //开启鼠标滚轮缩放
+
+                    for (let i = 0; i < data.length; i++) {
+                        //画点
+                        /*if (data[i].type === "point") {
+                            var point = new BMapGL.Point(parseFloat(data[i].coord[0].B), parseFloat(data[i].coord[0].L));
+                            var marker = new BMapGL.Marker(point);        // 创建标注   
+                            map.addOverlay(marker);                     // 将标注添加到地图中
+                        }*/
+                        //画线
+                        if (data[i].type === "line") {
+                            let pointarr = new Array();
+                            for (let j = 0; j < data[i].coord.length; j++)
+                                pointarr.push(new BMapGL.Point(parseFloat(data[i].coord[j].B), parseFloat(data[i].coord[j].L)));
+                            let _style = { strokeColor: data[i].style.LineStyle.color, strokeWeight: parseFloat(data[i].style.LineStyle.width) };
+                            var polyline = new BMapGL.Polyline(pointarr, _style);
+                            map.addOverlay(polyline);
+                        }
+                        //画多边形
+                        if (data[i].type === "polygon") {
+                            let pointarr = new Array();
+                            for (let j = 0; j < data[i].coord.length; j++)
+                                pointarr.push(new BMapGL.Point(parseFloat(data[i].coord[j].B), parseFloat(data[i].coord[j].L)));
+                            let _style = { strokeColor: data[i].style.PolyStyle.color, strokeWeight: parseFloat(data[i].style.LineStyle.width) };
+
+                            var polygon = new BMapGL.Polygon(pointarr, _style);
+                            map.addOverlay(polygon);
+                        }
+                    }
+                },
+                error: function () { }
+            });
+
+        });
+    </script>
+</body>
+
+</html>
